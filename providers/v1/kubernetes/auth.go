@@ -77,6 +77,8 @@ func (c *Client) getAuth(ctx context.Context) (*rest.Config, error) {
 	}
 
 	switch {
+	case c.store.Auth == nil:
+		return cfg, nil
 	case c.store.Auth.Token != nil:
 		token, err := c.fetchSecretKey(ctx, c.store.Auth.Token.BearerToken)
 		if err != nil {

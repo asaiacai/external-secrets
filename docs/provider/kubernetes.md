@@ -14,7 +14,7 @@ kind: ExternalSecret
 metadata:
   name: database-credentials
 spec:
-  refreshInterval: 1h
+  refreshInterval: 1h0m0s
   secretStoreRef:
     kind: SecretStore
     name: k8s-store             # name of the SecretStore (or kind specified)
@@ -63,7 +63,7 @@ kind: ExternalSecret
 metadata:
   name: fetch-tls-and-nginx
 spec:
-  refreshInterval: 1h
+  refreshInterval: 1h0m0s
   secretStoreRef:
     kind: SecretStore
     name: k8s-store
@@ -82,11 +82,15 @@ spec:
 
 ### Target API-Server Configuration
 
-The servers `url` can be omitted and defaults to `kubernetes.default`. You **have to** provide a CA certificate in order to connect to the API Server securely.
-For your convenience, each namespace has a ConfigMap `kube-root-ca.crt` that contains the CA certificate of the internal API Server (see `RootCAConfigMap` [feature gate](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)).
-Use that if you want to connect to the same API server.
-If you want to connect to a remote API Server you need to fetch it and store it inside the cluster as ConfigMap or Secret.
-You may also define it inline as base64 encoded value using the `caBundle` property.
+The servers `url` can be omitted and defaults to `kubernetes.default`.
+
+TLS verification behavior:
+- If neither `caBundle` nor `caProvider` is specified, the provider uses the system trust store (same behavior as `kubectl`). This is suitable for API servers that present publicly trusted certificates (for example, via Let's Encrypt).
+- If the API server uses a private/internal CA, provide a custom CA via `caBundle` or `caProvider` so the connection can be verified against that CA.
+
+For your convenience, each namespace has a ConfigMap `kube-root-ca.crt` that contains the CA certificate of the internal API Server (see `RootCAConfigMap` [feature gate](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)). Use that if you want to connect to the same API server.
+
+If you want to connect to a remote API Server that does not use a publicly trusted CA, fetch its CA certificate and store it inside the cluster as a ConfigMap or Secret. You may also define it inline as a base64-encoded value using the `caBundle` property.
 
 ```yaml
 apiVersion: external-secrets.io/v1
@@ -362,7 +366,7 @@ kind: PushSecret
 metadata:
   name: example
 spec:
-  refreshInterval: 1h
+  refreshInterval: 1h0m0s
   secretStoreRefs:
     - name: k8s-store-remote-ns
       kind: SecretStore
@@ -413,7 +417,7 @@ kind: PushSecret
 metadata:
   name: example
 spec:
-  refreshInterval: 1h
+  refreshInterval: 1h0m0s
   secretStoreRefs:
     - name: k8s-store-remote-ns
       kind: SecretStore
